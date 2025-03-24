@@ -35,6 +35,7 @@ public class ReservationController {
         return ResponseEntity.ok(order);
     }
 
+    // 上面这个业务结束后，对于以下接口，前端允许的时间应该在10分钟内，页面失效！
     /**
      * 微信支付发起接口：返回支付二维码链接或支付 URL
      */

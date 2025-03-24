@@ -1,6 +1,7 @@
 package com.example.charging.controller;
 
 import com.example.charging.model.Order;
+import com.example.charging.model.OrderStatus;
 import com.example.charging.repository.OrderRepository;
 import com.example.charging.service.PaymentService;
 import com.example.charging.util.XmlUtil;
@@ -12,9 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-/**
- * 支付回调 Controller，用于接收微信支付平台的回调通知
- */
 @RestController
 @RequestMapping("/api/payment")
 public class PaymentCallbackController {
@@ -24,9 +22,6 @@ public class PaymentCallbackController {
 
     @Autowired
     private OrderRepository orderRepository;
-
-    @Autowired
-    private RedissonClient redissonClient;
 
     /**
      * 微信支付回调接口（POST请求，XML格式）
@@ -48,15 +43,9 @@ public class PaymentCallbackController {
                 // 支付失败处理
                 Long orderId = Long.valueOf(callbackData.get("out_trade_no"));
                 Order order = orderRepository.findById(orderId).orElse(null);
-                if (order != null && order.getStatus().equals("PENDING_PAYMENT")) {
-                    order.setStatus("FAILED");
+                if (order != null && order.getStatus().equals(OrderStatus.PENDING_PAYMENT)) {
+                    order.setStatus(OrderStatus.FAILED);
                     orderRepository.save(order);
-                    // 释放锁
-                    String lockKey = "charging:lock:" + order.getChargerId() + ":" + order.getTimeSlot();
-                    RLock lock = redissonClient.getLock(lockKey);
-                    if (lock.isHeldByCurrentThread()) {
-                        lock.unlock();
-                    }
                 }
                 return generateWxResponse("SUCCESS", "OK");
             }
@@ -71,3 +60,4 @@ public class PaymentCallbackController {
                 "<return_msg><![CDATA[" + returnMsg + "]]></return_msg></xml>";
     }
 }
+

@@ -19,6 +19,7 @@ public class XxlJobDemoHandler {
     public ReturnT<String> demoJobHandler(String param) throws Exception {
 //        XxlJobLogger.log("java, Hello World~~~");
 //        XxlJobLogger.log("param:" + param);
+        System.out.println("java, Hello World~~~");
         return ReturnT.SUCCESS;
     }
 }
